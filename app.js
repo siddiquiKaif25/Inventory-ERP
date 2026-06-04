@@ -1,6 +1,32 @@
-let products = [];
-let suppliers = [];
-let movements = [];
+let products = JSON.parse(localStorage.getItem('products')) || [];
+let suppliers = JSON.parse(localStorage.getItem('suppliers')) || [];
+let movements = JSON.parse(localStorage.getItem('movements')) || [];
+
+function saveData(){
+    localStorage.setItem('products', JSON.stringify(products));
+    localStorage.setItem('suppliers', JSON.stringify(suppliers));
+    localStorage.setItem('movements', JSON.stringify(movements));
+}
+
+function showToast(message, type = 'success') {
+    let toast = document.createElement('div');
+    toast.textContent = message;
+    toast.style.cssText = `
+        position: fixed; bottom: 24px; right: 24px;
+        background: ${type === 'success' ? '#166534' : '#7f1d1d'};
+        color: white; padding: 12px 20px;
+        border-radius: 8px; font-size: 14px;
+        z-index: 999; opacity: 0;
+        transition: opacity 0.3s ease;
+        border-left: 4px solid ${type === 'success' ? '#4ade80' : '#f87171'};
+    `;
+    document.body.appendChild(toast);
+    setTimeout(() => toast.style.opacity = '1', 10);
+    setTimeout(() => {
+        toast.style.opacity = '0';
+        setTimeout(() => toast.remove(), 300);
+    }, 3000);
+}
 
 
 function renderProducts() {
@@ -11,9 +37,9 @@ function renderProducts() {
         <input type="number" id="prod-price" placeholder="price"/>
         <input type="number" id="prod-stock" placeholder="stock quantity"/>
         <input type="text" id="prod-category" placeholder="category"/>
-        <button onclick="addProduct()">Add product</button>
+        <button id="add-product-btn">Add product</button>
     </div>
-    <input type="text" id="search-input" placeholder="Search by name..." oninput="searchProducts()"/>
+    <input id="search-input" placeholder="Search by name..." />
     <table id="product-table">
         <thead>
             <tr>
@@ -37,7 +63,7 @@ function addProduct() {
     let category = document.getElementById('prod-category').value;
 
     if (name === '' || price === '' || stock === '') {
-        alert('please fill all fields');
+        showToast('please fill all fields', 'error');
         return;
     }
 
@@ -48,6 +74,8 @@ function addProduct() {
         stock: Number(stock),
         category: category
     });
+    saveData();
+    showToast('Product added ')
     renderProductTable();
 
     document.getElementById('prod-name').value = '';
@@ -76,8 +104,8 @@ function renderProductTable(list) {
             <td>${p.stock}</td>
             <td>${p.category || '-'}</td>
             <td>
-                <button onclick="editProduct(${p.id})">Edit</button>
-                <button onclick="deleteProduct(${p.id})">Delete</button>
+            <button class="edit-btn" data-id="${p.id}">Edit</button>
+            <button class="delete-btn" data-id="${p.id}">Delete</button>
             </td>
         </tr>
         `;
@@ -95,6 +123,7 @@ function deleteProduct(id) {
     products = products.filter(function (p) {
         return p.id !== id;
     });
+    saveData();
     renderProductTable();
 }
 
@@ -107,6 +136,7 @@ function editProduct(id) {
     document.getElementById('prod-category').value = p.category || '';
 
     products = products.filter(function (p) { return p.id !== id; });
+    saveData();
     renderProductTable();
 }
 
@@ -119,9 +149,13 @@ function renderDashboard() {
     let suppliersCount = suppliers.length;
 
     return `
-    <h2>Dashboard</h2>
+    <div class="hero-banner">
+    <h2>Inventory Overview</h2>
+    <p>Track products, suppliers and stock movements in one place.</p>
+    </div>
+
     <div id="kpi-grid">
-    <div class ="kpi-card">
+    <div class="kpi-card">
     <p>Total Products</p>
     <h3>${totalProducts}</h3>
     </div>
@@ -129,7 +163,7 @@ function renderDashboard() {
     <p>Total Stock Value</p>
     <h3>$${totalStockValue.toLocaleString()}</h3>
     </div>
-    <div class = "kpi-card">
+    <div class="kpi-card">
     <p>Low Stock Alert</p>
     <h3>${lowStockCount}</h3>
     </div>
@@ -138,9 +172,19 @@ function renderDashboard() {
     <h3>${suppliersCount}</h3>
     </div>
     </div>
+
+    <div style="display:flex; gap:24px; margin-top:30px;">
+        <div style="flex:1; background:rgba(255,255,255,.05); border-radius:16px; padding:20px;">
+            <h3 style="color:white; margin-bottom:16px;">Stock by Product</h3>
+            <canvas id="stockChart"></canvas>
+        </div>
+        <div style="flex:1; background:rgba(255,255,255,.05); border-radius:16px; padding:20px;">
+            <h3 style="color:white; margin-bottom:16px;">Stock Value by Product</h3>
+            <canvas id="valueChart"></canvas>
+        </div>
+    </div>
     `;
 }
-
 function renderSuppliers() {
     return `
     <h2>Suppliers</h2>
@@ -149,7 +193,7 @@ function renderSuppliers() {
         <input type="text" id="sup-contact" placeholder="Contact number"/>
         <input type="email" id="sup-email" placeholder="Email"/>
         <input type="text" id="sup-city" placeholder="City"/>
-        <button onclick="addSupplier()">Add Supplier</button>
+        <button id="add-supplier-btn">Add Supplier</button>
     </div>
     <table id="supplier-table">
         <thead>
@@ -181,7 +225,7 @@ function renderStock() {
             <option value="OUT">OUT</option>
         </select>
         <input type="date" id="mov-date"/>
-        <button onclick="addMovement()">Add Movement</button>
+        <button id="add-movement-btn">Add Movement</button>
     </div>
     <table id="stock-table">
         <thead>
@@ -205,14 +249,14 @@ function addMovement() {
     let date = document.getElementById('mov-date').value;
 
     if (!productId || !qty || !date) {
-        alert('Please fill all fields');
+        showToast('Please fill all fields', 'error');
         return;
     }
 
     // Find product and update its stock
     let product = products.find(p => p.id === productId);
     if (type === 'OUT' && product.stock < qty) {
-        alert('Not enough stock!');
+        showToast('Not enough stock!', 'error');
         return;
     }
     if (type === 'IN') {
@@ -229,14 +273,14 @@ function addMovement() {
         qty: qty,
         date: date
     });
-
+    saveData();
+    showToast('Movement recorded')
     renderMovementTable();
 
     document.getElementById('mov-product').value = '';
     document.getElementById('mov-qty').value = '';
     document.getElementById('mov-date').value = '';
 }
-
 
 function renderMovementTable() {
     let tbody = document.getElementById('stock-tbody');
@@ -366,7 +410,7 @@ function addSupplier() {
     let city = document.getElementById('sup-city').value;
 
     if (name === '' || contact === '' || email === '' || city === '') {
-        alert('Please fill all fields');
+        showToast('Please fill all fields','error');
         return;
     }
 
@@ -377,6 +421,8 @@ function addSupplier() {
         email: email,
         city: city
     });
+    saveData();
+    showToast('supplier added!')
     renderSupplierTable();
 
     document.getElementById('sup-name').value = '';
@@ -397,7 +443,7 @@ function renderSupplierTable() {
             <td>${s.email}</td>
             <td>${s.city}</td>
             <td>
-                <button onclick="deleteSupplier(${s.id})">Delete</button>
+                <button class="delete-supplier-btn" data-id="${s.id}">Delete</button>
             </td>
         </tr>
         `;
@@ -408,38 +454,156 @@ function deleteSupplier(id) {
     suppliers = suppliers.filter(function (s) {
         return s.id !== id;
     });
+    saveData();
     renderSupplierTable();
 }
 
 
+function renderCharts() {
+    if (products.length === 0) return;
+
+    let labels = products.map(p => p.name);
+    let stockData = products.map(p => p.stock);
+    let valueData = products.map(p => p.price * p.stock);
+
+    // Bar chart — stock quantity
+    new Chart(document.getElementById('stockChart'), {
+        type: 'bar',
+        data: {
+            labels: labels,
+            datasets: [{
+                label: 'Stock Quantity',
+                data: stockData,
+                backgroundColor: 'rgba(59, 130, 246, 0.7)',
+                borderColor: '#3b82f6',
+                borderWidth: 1
+            }]
+        },
+        options: {
+            plugins: { legend: { labels: { color: 'white' } } },
+            scales: {
+                x: { ticks: { color: 'white' }, grid: { color: 'rgba(255,255,255,0.1)' } },
+                y: { ticks: { color: 'white' }, grid: { color: 'rgba(255,255,255,0.1)' } }
+            }
+        }
+    });
+
+    // Line chart — stock value
+    new Chart(document.getElementById('valueChart'), {
+        type: 'line',
+        data: {
+            labels: labels,
+            datasets: [{
+                label: 'Stock Value ($)',
+                data: valueData,
+                backgroundColor: 'rgba(124, 58, 237, 0.2)',
+                borderColor: '#7c3aed',
+                borderWidth: 2,
+                pointBackgroundColor: '#7c3aed',
+                fill: true,
+                tension: 0.4
+            }]
+        },
+        options: {
+            plugins: { legend: { labels: { color: 'white' } } },
+            scales: {
+                x: { ticks: { color: 'white' }, grid: { color: 'rgba(255,255,255,0.1)' } },
+                y: { ticks: { color: 'white' }, grid: { color: 'rgba(255,255,255,0.1)' } }
+            }
+        }
+    });
+}
 
 
 function navigate(page, btn) {
+    document.getElementById('sidebar').classList.remove('open');
+    document.getElementById('overlay').classList.remove('show');
+
     document.querySelectorAll("button")
         .forEach(b => b.classList.remove('active'));
     btn.classList.add('active');
     document.getElementById('page-title').textContent = page;
+
     if (page === 'Dashboard') {
         document.getElementById('content').innerHTML = renderDashboard();
-
+        renderCharts();
     } else if (page === 'Products') {
         document.getElementById('content').innerHTML = renderProducts();
-
     } else if (page === 'Suppliers') {
         document.getElementById('content').innerHTML = renderSuppliers();
-    }
-    else if (page === 'Stock') {
+    } else if (page === 'Stock') {
         document.getElementById('content').innerHTML = renderStock();
-    }
-    else if (page === 'Low Stock') {
+    } else if (page === 'Low Stock') {
         document.getElementById('content').innerHTML = renderLowStock();
-    }
-    else if (page === 'Reports') {
+    } else if (page === 'Reports') {
         document.getElementById('content').innerHTML = renderReports();
-    }
-    else {
+    } else {
         document.getElementById('content').innerHTML = '<h2>' + page + '</h2>';
     }
 }
 
+// Use event delegation on #content for all dynamic buttons
+document.getElementById('content').addEventListener('click', function(e) {
+
+    // Add Product button
+    if (e.target.id === 'add-product-btn') {
+        addProduct();
+    }
+
+    // Edit product
+    if (e.target.classList.contains('edit-btn')) {
+        let id = Number(e.target.dataset.id);
+        editProduct(id);
+    }
+
+    // Delete product
+    if (e.target.classList.contains('delete-btn')) {
+        let id = Number(e.target.dataset.id);
+        deleteProduct(id);
+    }
+
+    // Add Movement
+    if (e.target.id === 'add-movement-btn') {
+        addMovement();
+    }
+
+    // Delete supplier
+    if (e.target.classList.contains('delete-supplier-btn')) {
+        let id = Number(e.target.dataset.id);
+        deleteSupplier(id);
+    }
+
+    // Add Supplier
+    if (e.target.id === 'add-supplier-btn') {
+        addSupplier();
+    }
+});
+
+// Search input (input event, not click)
+document.getElementById('content').addEventListener('input', function(e) {
+    if (e.target.id === 'search-input') {
+        searchProducts();
+    }
+});
+
 document.getElementById('content').innerHTML = renderDashboard();
+renderCharts();
+
+// Hamburger menu
+document.getElementById('hamburger').addEventListener('click', function() {
+    document.getElementById('sidebar').classList.toggle('open');
+    document.getElementById('overlay').classList.toggle('show');
+});
+
+// Close sidebar when overlay is clicked
+document.getElementById('overlay').addEventListener('click', function() {
+    document.getElementById('sidebar').classList.remove('open');
+    document.getElementById('overlay').classList.remove('show');
+});
+
+document.getElementById('sidebar').addEventListener('click', function(e) {
+    let page = e.target.dataset.page;
+    if (page) {
+        navigate(page, e.target);
+    }
+});

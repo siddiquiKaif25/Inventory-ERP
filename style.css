@@ -3,24 +3,43 @@ body {
     height: 100vh;
     margin: 0;
     font-family: sans-serif;
-    background: #6f3a3a;
-    color: rgb(251, 201, 201);
+    background: linear-gradient(
+        135deg,
+        #0f172a,
+        #1e293b
+        );
+    color: rgb(199, 193, 193);
+}
+
+.logo{
+    color: wheat;
+    font-size: 26px;
+    letter-spacing: 1px;
+    margin: 30px;
 }
 
 #sidebar {
     width: 240px;
-    background: #422929;
-    height: 100vh;
-    padding: 20px;
+    background: rgba(15,23,42,.85);
+    backdrop-filter: blur(12px);
+    border-right: 1px solid rgb(245, 212, 150);
+    padding: 24px;
 }
 
 #header {
     height: 60px;
-    background: #422929;
+    background: rgba(255,255,255,.03);
+    backdrop-filter: blur(10px);
+    border-bottom: 1px solid rgba(255, 255, 255, .08);
     display: flex;
     align-items: center;
     padding: 0 24px;
     border-bottom: 1px solid #070707;
+    color:beige;
+
+    font-style: italic;
+    font-size: 22px;
+    font-weight: 500;
 }
 
 #main {
@@ -33,6 +52,17 @@ body {
     flex: 1;
     overflow-y: auto;
     padding: 24px;
+    animation: fadeIn .3s ease;
+}
+@keyframes fadeIn{
+    from{
+        opacity: 0;
+        transform: translateY(10px);
+    }
+    to{
+        opacity: 1;
+        transform: translateY(0);
+    }
 }
 
 
@@ -48,10 +78,13 @@ button {
     cursor: pointer;
     border-radius: 6px;
     font-size: 14px;
+
+    position: relative;
+    overflow: hidden;
 }
 
 button:hover {
-    background: #3f1212;
+    background: #1b3058;
 
 }
 
@@ -69,23 +102,32 @@ button.active {
 }
 
 .kpi-card {
-    background: #523131;
-    border-radius: 10px;
-    padding: 20px;
-    border: 1px solid #f2f4f7;
+    background: rgba(255,255,255,.05);
+    backdrop-filter: blur(10px);
+    border: 1px solid rgba(255,255,255,0.8);
+    border-radius: 16px;
+    transition: 0.3s;
+    border-top: 4px solid #3b82f6;
+}
+.kpi-card:hover{
+    transform: translateY(-4px);
 
+    box-shadow: 
+    0 12px 25px rgba(0,0,0,.25);
 }
 
 .kpi-card p {
     font-size: 15px;
     color: rgb(251, 201, 201);
     margin-bottom: 8px;
+    padding-left: 25px;
 }
 
 .kpi-card h3 {
     font-size: 28px;
     font-weight: 700;
     color: white;
+    padding-left: 30px;
 }
 
 #product-form {
@@ -97,10 +139,25 @@ button.active {
 #product-form input {
     padding: 8px 12px;
     border-radius: 6px;
-    border: 1px solid #252d3d;
-    background: #1e2535;
+    border: 1px solid rgba(255,255,255,0.8);
+    background: rgba(255,255,255,0.5);
     color: white;
     font-size: 14px;
+}
+input:focus,
+select:focus{
+    outline: none;
+    border-color:#3b82f6;
+    box-shadow: 
+    0 0 0 3px rgba(59, 130, 246, .15);
+}
+table{
+    background: rgba(255,255,255,0.04);
+    border-radius: 12px;
+    overflow: hidden;
+}
+tr:hover{
+    background: rgba(255,255,255,.05);
 }
 
 #product-table {
@@ -117,8 +174,22 @@ button.active {
     font-size: 14px;
 }
 
+.edit-btn {
+    color: #93c5fd;
+    background: #0f1e35;
+    border: 1px solid #2563eb;
+    width: auto;
+}
+
+.delete-btn {
+    color: #fca5a5;
+    background: #1a0a0a;
+    border: 1px solid #7f1d1d;
+    width: auto;
+}
+
 #product-table th {
-    color: #3f1212;
+    color: #494646;
     font-weight: 600;
 }
 
@@ -132,3 +203,89 @@ button.active {
     margin-bottom: 10px; 
     width: 200px;
 }
+
+#sidebar button{
+    transition: .25s;
+}
+#sidebar button:hover{
+    transform: translateX(5px);
+}
+
+#sidebar button.active{
+    background: linear-gradient(
+        90deg,
+        #3b82f6,
+        #2563eb
+    );
+}
+
+.hero-banner{
+    padding: 30px;
+    border-radius: 20px;
+
+    background: linear-gradient(
+        135deg, 
+        #2563eb, 
+        #7c3aed
+    );
+    color:white;
+    margin-bottom: 25px;
+
+    box-shadow: 
+    0 10px 25px rgba(0,0,0,.25);
+
+}
+
+.hero-banner h2{
+    margin:0;
+    font-size: 28px;
+}
+
+.hero-banner p{
+    margin-top: 10px;
+    opacity: .9;
+}
+
+
+#hamburger{
+
+    display: none;
+    background: none;
+    border: none;
+    color: wheat;
+    font-size: 24px;
+    cursor: pointer;
+    width: auto;
+    margin-right: 16px;
+    padding: 4px 8px;
+}
+
+#overlay{
+    display: none;
+    position: fixed;
+    inset: 0;
+    background: rgba(0, 0, 0,0.5);
+    z-index: 99;
+}
+
+@media  (max-width: 768px){
+    #hamburger{
+        display: block;
+    }
+    #sidebar{
+        position: fixed;
+        left: -260px;
+        top: 0;
+        height: 100vh;
+        z-index: 100;
+        transition: left 0.3s ease;
+    }
+    #sidebar.open{
+        left:0;
+    }
+    #overlay.show{
+        display: block;
+    }
+
+}
+

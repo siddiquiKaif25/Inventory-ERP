@@ -10,18 +10,21 @@
 
 <body>
     <aside id="sidebar">
-        <h2>StockFlow</h2>
-        <button onclick="navigate('Dashboard', this)">Dashboard</button>
-        <button onclick="navigate('Products', this)">Products</button>
-        <button onclick="navigate('Stock', this)">Stock</button>
-        <button onclick="navigate('Suppliers', this)">Suppliers</button>
-        <button onclick="navigate('Low Stock', this)">Low Stock</button>
-        <button onclick="navigate('Reports', this)">Reports</button>
+        <h2 class="logo">StockFlow</h2>
+        <button data-page="Dashboard">Dashboard</button>
+        <button data-page="Products">Products</button>
+        <button data-page="Stock">Stock</button>
+        <button data-page="Suppliers">Suppliers</button>
+        <button data-page="Low Stock">Low Stock</button>
+        <button data-page="Reports">Reports</button>
     </aside>
+
+    <div id="overlay"></div>
 
     <div id="main">
 
         <header id="header">
+            <button id="hamburger">☰</button>
             <span id="page-title">Dashboard</span>
         </header>
 
@@ -31,7 +34,7 @@
 
     </div>
 
-
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <script src="app.js"></script>
 </body>
 
