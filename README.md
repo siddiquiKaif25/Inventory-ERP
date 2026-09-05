@@ -1,2 +1,2 @@
-# Inventory-ERP
-A responsive Inventory ERP web app built with HTML, CSS, and JavaScript
+# Inventory-dashboard
+A responsive Inventory dashboard, web app built with HTML, CSS, and JavaScript
